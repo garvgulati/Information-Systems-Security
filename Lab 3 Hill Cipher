@@ -1,0 +1,75 @@
+import numpy as np
+
+def text_to_numbers(text):
+    """Convert text to a list of numbers (A=0, ..., Z=25)."""
+    return [ord(char) - ord('A') for char in text.upper() if char.isalpha()]
+
+def numbers_to_text(numbers):
+    """Convert a list of numbers back to text."""
+    return ''.join(chr(num + ord('A')) for num in numbers)
+
+def hill_encrypt(plaintext, key):
+    """Encrypt plaintext using the Hill cipher."""
+    key_matrix = np.array(key)
+    n = key_matrix.shape[0]
+    
+    # Convert plaintext to numbers and pad with 'X' if necessary
+    numbers = text_to_numbers(plaintext)
+    while len(numbers) % n != 0:
+        numbers.append(23)  # 'X' corresponds to 23
+    
+    # Divide into blocks and encrypt
+    blocks = [numbers[i:i + n] for i in range(0, len(numbers), n)]
+    ciphertext_numbers = []
+    
+    for block in blocks:
+        block_vector = np.array(block).reshape(-1, 1)
+        encrypted_vector = np.dot(key_matrix, block_vector) % 26
+        ciphertext_numbers.extend(encrypted_vector.flatten())
+    
+    return numbers_to_text(ciphertext_numbers)
+
+def hill_decrypt(ciphertext, key):
+    """Decrypt ciphertext using the Hill cipher."""
+    key_matrix = np.array(key)
+    n = key_matrix.shape[0]
+    
+    # Calculate the modular inverse of the key matrix
+    determinant = int(round(np.linalg.det(key_matrix))) % 26
+    determinant_inverse = pow(determinant, -1, 26)
+    adjugate_matrix = np.round(determinant * np.linalg.inv(key_matrix)).astype(int) % 26
+    inverse_key_matrix = (determinant_inverse * adjugate_matrix) % 26
+    
+    # Convert ciphertext to numbers
+    numbers = text_to_numbers(ciphertext)
+    blocks = [numbers[i:i + n] for i in range(0, len(numbers), n)]
+    plaintext_numbers = []
+    
+    for block in blocks:
+        block_vector = np.array(block).reshape(-1, 1)
+        decrypted_vector = np.dot(inverse_key_matrix, block_vector) % 26
+        plaintext_numbers.extend(decrypted_vector.flatten())
+    
+    return numbers_to_text(plaintext_numbers)
+
+# Input from user
+mode = input("Do you want to encrypt or decrypt? (encrypt/decrypt): ").strip().lower()
+text = input("Enter the text: ").strip()
+size = int(input("Enter the size of the key matrix (e.g., 2 for 2x2, 3 for 3x3): "))
+
+# Input the key matrix
+print(f"Enter the {size}x{size} key matrix row by row (space-separated integers):")
+key = []
+for _ in range(size):
+    row = list(map(int, input().split()))
+    key.append(row)
+
+# Encrypt or decrypt based on user input
+if mode == "encrypt":
+    result = hill_encrypt(text, key)
+    print("Encrypted Text:", result)
+elif mode == "decrypt":
+    result = hill_decrypt(text, key)
+    print("Decrypted Text:", result)
+else:
+    print("Invalid mode selected. Please choose 'encrypt' or 'decrypt'.")
