@@ -1,0 +1,52 @@
+def vigenere_encrypt(plaintext, keyword):
+    """Encrypts plaintext using Vigenère Cipher."""
+    plaintext = plaintext.upper()
+    keyword = keyword.upper()
+    encrypted_text = ""
+    
+    key_index = 0
+    for char in plaintext:
+        if char.isalpha():  # Only encrypt letters
+            shift = ord(keyword[key_index]) - ord('A')
+            encrypted_char = chr((ord(char) - ord('A') + shift) % 26 + ord('A'))
+            encrypted_text += encrypted_char
+            key_index = (key_index + 1) % len(keyword)  # Move to the next letter in key
+        else:
+            encrypted_text += char  # Keep non-alphabetic characters unchanged
+
+    return encrypted_text
+
+
+def vigenere_decrypt(ciphertext, keyword):
+    """Decrypts ciphertext using Vigenère Cipher."""
+    ciphertext = ciphertext.upper()
+    keyword = keyword.upper()
+    decrypted_text = ""
+    
+    key_index = 0
+    for char in ciphertext:
+        if char.isalpha():  # Only decrypt letters
+            shift = ord(keyword[key_index]) - ord('A')
+            decrypted_char = chr((ord(char) - ord('A') - shift) % 26 + ord('A'))
+            decrypted_text += decrypted_char
+            key_index = (key_index + 1) % len(keyword)  # Move to the next letter in key
+        else:
+            decrypted_text += char  # Keep non-alphabetic characters unchanged
+
+    return decrypted_text
+
+
+# User Input
+mode = input("Do you want to encrypt or decrypt? (encrypt/decrypt): ").strip().lower()
+text = input("Enter the text: ").strip()
+keyword = input("Enter the keyword: ").strip()
+
+# Encrypt or Decrypt
+if mode == "encrypt":
+    result = vigenere_encrypt(text, keyword)
+    print("Encrypted Text:", result)
+elif mode == "decrypt":
+    result = vigenere_decrypt(text, keyword)
+    print("Decrypted Text:", result)
+else:
+    print("Invalid mode selected. Please choose 'encrypt' or 'decrypt'.")
