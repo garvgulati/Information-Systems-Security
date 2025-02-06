@@ -1,0 +1,70 @@
+def rail_fence_encrypt(text, rails):
+    """Encrypts text using Rail Fence Cipher."""
+    if rails <= 1:
+        return text  # No encryption needed if only 1 rail
+    
+    rail_matrix = ['' for _ in range(rails)]
+    row, step = 0, 1  # Step determines direction
+    
+    for char in text:
+        rail_matrix[row] += char
+        if row == 0:
+            step = 1
+        elif row == rails - 1:
+            step = -1
+        row += step
+    
+    return ''.join(rail_matrix)
+
+
+def rail_fence_decrypt(ciphertext, rails):
+    """Decrypts text using Rail Fence Cipher."""
+    if rails <= 1:
+        return ciphertext  # No decryption needed if only 1 rail
+    
+    # Create a list of empty strings to reconstruct the rail structure
+    rail_matrix = ['' for _ in range(rails)]
+    row, step = 0, 1
+    zigzag_pattern = []
+    
+    # Determine the zigzag pattern
+    for _ in ciphertext:
+        zigzag_pattern.append(row)
+        if row == 0:
+            step = 1
+        elif row == rails - 1:
+            step = -1
+        row += step
+    
+    # Place the characters into the rails in the correct order
+    index = 0
+    for r in range(rails):
+        for i in range(len(ciphertext)):
+            if zigzag_pattern[i] == r:
+                rail_matrix[r] += ciphertext[index]
+                index += 1
+    
+    # Read characters in zigzag order to reconstruct the original text
+    decrypted_text = ''
+    rail_indices = [0] * rails
+    for i in zigzag_pattern:
+        decrypted_text += rail_matrix[i][rail_indices[i]]
+        rail_indices[i] += 1
+    
+    return decrypted_text
+
+
+# User Input
+mode = input("Do you want to encrypt or decrypt? (encrypt/decrypt): ").strip().lower()
+text = input("Enter the text: ").strip()
+rails = int(input("Enter the number of rails: "))
+
+# Encrypt or Decrypt
+if mode == "encrypt":
+    result = rail_fence_encrypt(text, rails)
+    print("Encrypted Text:", result)
+elif mode == "decrypt":
+    result = rail_fence_decrypt(text, rails)
+    print("Decrypted Text:", result)
+else:
+    print("Invalid mode selected. Please choose 'encrypt' or 'decrypt'.")
